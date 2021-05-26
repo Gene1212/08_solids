@@ -22,18 +22,22 @@
 void scanline_convert(struct matrix *points, int i, screen s, zbuffer zb)
 {
   int point;
-  double x0, x1, y0;
-  double xb, xm, xt, yb, ym, yt;
+  double x0, x1, y0, z0, z1;
+  double xb, xm, xt, yb, ym, yt, zbot, zm, zt;
+
   color c;
+  c.red = 0;
+  c.green = 0;
+  c.blue = 0;
 
   for (point = 0; point < points->lastcol - 2; point += 3)
   {
     double y1 = points->m[1][point];
     double y2 = points->m[1][point + 1];
     double y3 = points->m[1][point + 2];
-    (c.red += i * 32) % 255;
-    (c.green += i * 32) % 255;
-    (c.blue += i * 32) % 255;
+    (c.red += ((i % 25) + 2) * 16) % 255;
+    (c.green += ((i % 20) + 2) * 16) % 255;
+    (c.blue += ((i % 15) + 2) * 16) % 255;
 
     if (y3 > y2 && y3 > y1 && y2 > y1)
     {
@@ -43,9 +47,12 @@ void scanline_convert(struct matrix *points, int i, screen s, zbuffer zb)
       xb = points->m[0][point];
       xm = points->m[0][point + 1];
       xt = points->m[0][point + 2];
+      zbot = points->m[2][point];
+      zm = points->m[2][point + 1];
+      zt = points->m[2][point + 2];
     }
 
-    if (y3 > y2 && y3 > y1 && y2 < y1)
+    else if (y3 > y2 && y3 > y1 && y2 < y1)
     {
       yb = y2;
       ym = y1;
@@ -53,9 +60,12 @@ void scanline_convert(struct matrix *points, int i, screen s, zbuffer zb)
       xb = points->m[0][point + 1];
       xm = points->m[0][point];
       xt = points->m[0][point + 2];
+      zbot = points->m[2][point + 1];
+      zm = points->m[2][point];
+      zt = points->m[2][point + 2];
     }
 
-    if (y2 > y1 && y2 > y3 && y1 < y3)
+    else if (y2 > y1 && y2 > y3 && y1 < y3)
     {
       yb = y1;
       ym = y3;
@@ -63,8 +73,11 @@ void scanline_convert(struct matrix *points, int i, screen s, zbuffer zb)
       xb = points->m[0][point];
       xm = points->m[0][point + 2];
       xt = points->m[0][point + 1];
+      zbot = points->m[2][point];
+      zm = points->m[2][point + 2];
+      zt = points->m[2][point + 1];
     }
-    if (y2 > y1 && y2 > y3 && y1 > y3)
+    else if (y2 > y1 && y2 > y3 && y1 > y3)
     {
       yb = y3;
       ym = y1;
@@ -72,8 +85,11 @@ void scanline_convert(struct matrix *points, int i, screen s, zbuffer zb)
       xb = points->m[0][point + 2];
       xm = points->m[0][point];
       xt = points->m[0][point + 1];
+      zbot = points->m[2][point + 2];
+      zm = points->m[2][point];
+      zt = points->m[2][point + 1];
     }
-    if (y1 > y2 && y1 > y3 && y2 > y3)
+    else if (y1 > y2 && y1 > y3 && y2 > y3)
     {
       yb = y3;
       ym = y2;
@@ -81,8 +97,11 @@ void scanline_convert(struct matrix *points, int i, screen s, zbuffer zb)
       xb = points->m[0][point + 2];
       xm = points->m[0][point + 1];
       xt = points->m[0][point];
+      zbot = points->m[2][point + 2];
+      zm = points->m[2][point + 1];
+      zt = points->m[2][point];
     }
-    if (y1 > y2 && y1 > y3 && y2 < y3)
+    else if (y1 > y2 && y1 > y3 && y2 < y3)
     {
       yb = y2;
       ym = y3;
@@ -90,28 +109,109 @@ void scanline_convert(struct matrix *points, int i, screen s, zbuffer zb)
       xb = points->m[0][point + 1];
       xm = points->m[0][point + 2];
       xt = points->m[0][point];
+      zbot = points->m[2][point + 1];
+      zm = points->m[2][point + 2];
+      zt = points->m[2][point];
     }
+    //special case
+    else if (y1 == y2)
+    {
+      if (y1 > y3)
+      {
+        yb = y3;
+        ym = y2;
+        yt = y1;
+        xb = points->m[0][point + 2];
+        xm = points->m[0][point + 1];
+        xt = points->m[0][point];
+      }
+      else
+      {
+        yt = y3;
+        ym = y1;
+        yb = y2;
+        xt = points->m[0][point + 2];
+        xm = points->m[0][point];
+        yb = points->m[0][point + 1];
+      }
+    }
+
+    else if (y1 == y3)
+    {
+      if (y1 > y2)
+      {
+        yb = y2;
+        yt = y1;
+        ym = y3;
+        xb = points->m[0][point + 1];
+        xt = points->m[0][point];
+        xm = points->m[0][point + 2];
+      }
+      else
+      {
+        yt = y2;
+        yb = y1;
+        ym = y3;
+        xt = points->m[0][point + 1];
+        xb = points->m[0][point];
+        xm = points->m[0][point + 2];
+      }
+    }
+    else if (y2 == y3)
+    {
+      if (y2 > y1)
+      {
+        yb = y1;
+        ym = y2;
+        yt = y3;
+        xb = points->m[0][point];
+        xm = points->m[0][point + 1];
+        xt = points->m[0][point + 2];
+      }
+      else
+      {
+        yt = y1;
+        ym = y2;
+        yb = y3;
+        xt = points->m[0][point];
+        xm = points->m[0][point + 1];
+        xb = points->m[0][point + 2];
+      }
+    }
+
     x0 = xb;
     x1 = xb;
     y0 = yb;
+    z0 = zbot;
+    z1 = zbot;
 
     double dx0 = (xt - xb) / (yt - yb + 1);
     double dx1 = (xm - xb) / (ym - yb + 1);
     double dx1_1 = (xt - xm) / (yt - ym + 1);
-    double swap = xm;
+    double xswap = xm;
+    double dz0 = (zt - zbot) / (yt - yb + 1);
+    double dz1 = (zt - zbot) / (ym - yb + 1);
+    double dz1_1 = (zt - zm) / (yt - ym + 1);
+    double zswap = zm;
 
     while (y0 <= yt)
     {
+
       draw_line(x0, y0, 0, x1, y0, 0, s, zb, c);
       x0 += dx0;
       x1 += dx1;
+      z0 += dz0;
+      z1 += dz1;
       y0 += 1;
 
       if (y0 >= ym)
       {
         dx1 = dx1_1;
-        x1 = swap;
-        swap += dx1;
+        dz1 = dz1_1;
+        x1 = xswap;
+        z1 = zswap;
+        xswap += dx1;
+        zswap += dz1;
       }
     }
   }
@@ -171,6 +271,7 @@ void draw_polygons(struct matrix *polygons, screen s, zbuffer zb, color c)
     {
 
       struct matrix *triangle = new_matrix(4, 3);
+      ident(triangle);
       triangle->m[0][0] = polygons->m[0][point];
       triangle->m[1][0] = polygons->m[1][point];
       triangle->m[2][0] = polygons->m[2][point];
@@ -181,7 +282,7 @@ void draw_polygons(struct matrix *polygons, screen s, zbuffer zb, color c)
       triangle->m[1][2] = polygons->m[1][point + 2];
       triangle->m[2][2] = polygons->m[2][point + 2];
 
-      draw_line(polygons->m[0][point],
+      /*       draw_line(polygons->m[0][point],
                 polygons->m[1][point],
                 polygons->m[2][point],
                 polygons->m[0][point + 1],
@@ -201,9 +302,9 @@ void draw_polygons(struct matrix *polygons, screen s, zbuffer zb, color c)
                 polygons->m[0][point + 2],
                 polygons->m[1][point + 2],
                 polygons->m[2][point + 2],
-                s, zb, c);
+                s, zb, c); */
+      scanline_convert(triangle, point, s, zb);
     }
-    scanline_convert(triangle, point / 3, s, zb);
   }
 }
 
