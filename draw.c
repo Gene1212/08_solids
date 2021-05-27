@@ -124,6 +124,9 @@ void scanline_convert(struct matrix *points, int i, screen s, zbuffer zb)
         xb = points->m[0][point + 2];
         xm = points->m[0][point + 1];
         xt = points->m[0][point];
+        zbot = points->m[2][point + 2];
+        zm = points->m[2][point + 1];
+        zt = points->m[2][point];
       }
       else
       {
@@ -133,6 +136,9 @@ void scanline_convert(struct matrix *points, int i, screen s, zbuffer zb)
         xt = points->m[0][point + 2];
         xm = points->m[0][point];
         yb = points->m[0][point + 1];
+        zbot = points->m[2][point + 1];
+        zm = points->m[2][point];
+        zt = points->m[2][point + 2];
       }
     }
 
@@ -146,6 +152,9 @@ void scanline_convert(struct matrix *points, int i, screen s, zbuffer zb)
         xb = points->m[0][point + 1];
         xt = points->m[0][point];
         xm = points->m[0][point + 2];
+        zbot = points->m[2][point + 1];
+        zm = points->m[2][point + 2];
+        zt = points->m[2][point];
       }
       else
       {
@@ -155,6 +164,9 @@ void scanline_convert(struct matrix *points, int i, screen s, zbuffer zb)
         xt = points->m[0][point + 1];
         xb = points->m[0][point];
         xm = points->m[0][point + 2];
+        zbot = points->m[2][point];
+        zm = points->m[2][point + 2];
+        zt = points->m[2][point + 1];
       }
     }
     else if (y2 == y3)
@@ -167,6 +179,9 @@ void scanline_convert(struct matrix *points, int i, screen s, zbuffer zb)
         xb = points->m[0][point];
         xm = points->m[0][point + 1];
         xt = points->m[0][point + 2];
+        zbot = points->m[2][point];
+        zm = points->m[2][point + 1];
+        zt = points->m[2][point + 2];
       }
       else
       {
@@ -176,6 +191,9 @@ void scanline_convert(struct matrix *points, int i, screen s, zbuffer zb)
         xt = points->m[0][point];
         xm = points->m[0][point + 1];
         xb = points->m[0][point + 2];
+        zbot = points->m[2][point + 2];
+        zm = points->m[2][point + 1];
+        zt = points->m[2][point];
       }
     }
 
@@ -190,14 +208,13 @@ void scanline_convert(struct matrix *points, int i, screen s, zbuffer zb)
     double dx1_1 = (xt - xm) / (yt - ym + 1);
     double xswap = xm;
     double dz0 = (zt - zbot) / (yt - yb + 1);
-    double dz1 = (zt - zbot) / (ym - yb + 1);
+    double dz1 = (zm - zbot) / (ym - yb + 1);
     double dz1_1 = (zt - zm) / (yt - ym + 1);
     double zswap = zm;
 
     while (y0 <= yt)
     {
-
-      draw_line(x0, y0, 0, x1, y0, 0, s, zb, c);
+      draw_line(x0, y0, z0, x1, y0, z1, s, zb, c);
       x0 += dx0;
       x1 += dx1;
       z0 += dz0;
@@ -839,7 +856,7 @@ void draw_line(int x0, int y0, double z0,
   while (loop_start < loop_end)
   {
 
-    plot(s, zb, c, x, y, 0);
+    plot(s, zb, c, x, y, z0);
     if ((wide && ((A > 0 && d > 0) ||
                   (A < 0 && d < 0))) ||
         (tall && ((A > 0 && d < 0) ||
@@ -848,14 +865,16 @@ void draw_line(int x0, int y0, double z0,
       y += dy_northeast;
       d += d_northeast;
       x += dx_northeast;
+      z0 += (z1-z0)/(x1 - x0)
     }
     else
     {
       x += dx_east;
       y += dy_east;
       d += d_east;
+      z0 += (z1-z0)/(y1 - y0)
     }
     loop_start++;
   } //end drawing loop
-  plot(s, zb, c, x1, y1, 0);
+  plot(s, zb, c, x1, y1, z1);
 } //end draw_line

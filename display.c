@@ -34,10 +34,14 @@ pixel 0, 0 located at the lower left corner of the screen
 
 dw
 ====================*/
-void plot( screen s, zbuffer zb, color c, int x, int y, double z) {
+void plot(screen s, zbuffer zb, color c, int x, int y, double z)
+{
   int newy = YRES - 1 - y;
-  if ( x >= 0 && x < XRES && newy >=0 && newy < YRES )
+  if (x >= 0 && x < XRES && newy >= 0 && newy < YRES && z > zb[x][y])
+  {
     s[x][newy] = c;
+    zb[x][newy] = z;
+  }
 }
 
 /*======== void clear_screen() ==========
@@ -47,7 +51,8 @@ Sets every color in screen s to the default color.
 
 dw
 ====================*/
-void clear_screen( screen s ) {
+void clear_screen(screen s)
+{
 
   int x, y;
   color c;
@@ -56,8 +61,8 @@ void clear_screen( screen s ) {
   c.green = DEFAULT_COLOR;
   c.blue = DEFAULT_COLOR;
 
-  for ( y=0; y < YRES; y++ )
-    for ( x=0; x < XRES; x++)
+  for (y = 0; y < YRES; y++)
+    for (x = 0; x < XRES; x++)
       s[x][y] = c;
 }
 
@@ -66,15 +71,15 @@ Inputs:   zbuffer
 Returns:
 Sets all entries in the zbufffer to LONG_MIN
 ====================*/
-void clear_zbuffer( zbuffer zb ) {
+void clear_zbuffer(zbuffer zb)
+{
 
   int x, y;
 
-  for ( y=0; y < YRES; y++ )
-    for ( x=0; x < XRES; x++)
+  for (y = 0; y < YRES; y++)
+    for (x = 0; x < XRES; x++)
       zb[x][y] = LONG_MIN;
 }
-
 
 /*======== void save_ppm() ==========
 Inputs:   screen s
@@ -82,7 +87,8 @@ Inputs:   screen s
 Returns: 
 Saves screen s as a valid ppm file using the settings in ml6.h
 ====================*/
-void save_ppm( screen s, char *file) {
+void save_ppm(screen s, char *file)
+{
 
   int x, y;
   int fd;
@@ -92,8 +98,10 @@ void save_ppm( screen s, char *file) {
   fd = open(file, O_CREAT | O_WRONLY, 0644);
   sprintf(header, "P6\n%d %d\n%d\n", XRES, YRES, MAX_COLOR);
   write(fd, header, sizeof(header) - 1);
-  for ( y=0; y < YRES; y++ ) {
-    for ( x=0; x < XRES; x++) {
+  for (y = 0; y < YRES; y++)
+  {
+    for (x = 0; x < XRES; x++)
+    {
       pixel[0] = s[x][y].red;
       pixel[1] = s[x][y].green;
       pixel[2] = s[x][y].blue;
@@ -110,15 +118,17 @@ Returns:
 Saves screen s as a valid ppm file using the
 settings in ml6.h
 ====================*/
-void save_ppm_ascii( screen s, char *file) {
+void save_ppm_ascii(screen s, char *file)
+{
 
   int x, y;
   FILE *f;
 
   f = fopen(file, "w");
   fprintf(f, "P3\n%d %d\n%d\n", XRES, YRES, MAX_COLOR);
-  for ( y=0; y < YRES; y++ ) {
-    for ( x=0; x < XRES; x++)
+  for (y = 0; y < YRES; y++)
+  {
+    for (x = 0; x < XRES; x++)
 
       fprintf(f, "%d %d %d ", s[x][y].red, s[x][y].green, s[x][y].blue);
     fprintf(f, "\n");
@@ -138,19 +148,20 @@ command, the image will be saved in that format.
 
 dw
 ====================*/
-void save_extension( screen s, char *file) {
+void save_extension(screen s, char *file)
+{
 
   screen tmp;
   int x, y;
 
-  for ( y=0; y < YRES; y++ ) {
-    for ( x=0; x < XRES; x++)
+  for (y = 0; y < YRES; y++)
+  {
+    for (x = 0; x < XRES; x++)
       tmp[y][x] = s[x][y];
   }
 
   stbi_write_png(file, XRES, YRES, 3, tmp, 3 * XRES);
 }
-
 
 /*======== void display() ==========
 Inputs:   screen s
@@ -162,7 +173,8 @@ Requires imagemagick to be installed.
 
 dw
 ====================*/
-void display( screen s) {
+void display(screen s)
+{
 
   int x, y;
   FILE *f;
@@ -170,8 +182,9 @@ void display( screen s) {
   f = popen("display", "w");
 
   fprintf(f, "P3\n%d %d\n%d\n", XRES, YRES, MAX_COLOR);
-  for ( y=0; y < YRES; y++ ) {
-    for ( x=0; x < XRES; x++)
+  for (y = 0; y < YRES; y++)
+  {
+    for (x = 0; x < XRES; x++)
       fprintf(f, "%d %d %d ", s[x][y].red, s[x][y].green, s[x][y].blue);
     fprintf(f, "\n");
   }
