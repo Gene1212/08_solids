@@ -299,7 +299,7 @@ void draw_polygons(struct matrix *polygons, screen s, zbuffer zb, color c)
       triangle->m[1][2] = polygons->m[1][point + 2];
       triangle->m[2][2] = polygons->m[2][point + 2];
 
-      /*       draw_line(polygons->m[0][point],
+      /* draw_line(polygons->m[0][point],
                 polygons->m[1][point],
                 polygons->m[2][point],
                 polygons->m[0][point + 1],
@@ -857,6 +857,7 @@ void draw_line(int x0, int y0, double z0,
   {
 
     plot(s, zb, c, x, y, z0);
+
     if ((wide && ((A > 0 && d > 0) ||
                   (A < 0 && d < 0))) ||
         (tall && ((A > 0 && d < 0) ||
@@ -865,16 +866,17 @@ void draw_line(int x0, int y0, double z0,
       y += dy_northeast;
       d += d_northeast;
       x += dx_northeast;
-      z0 += (z1-z0)/(x1 - x0)
+      z0 += (z1 - z0) / (loop_end - loop_start + 1);
     }
     else
     {
       x += dx_east;
       y += dy_east;
       d += d_east;
-      z0 += (z1-z0)/(y1 - y0)
+      z0 += (z1 - z0) / (loop_end - loop_start + 1);
     }
     loop_start++;
   } //end drawing loop
   plot(s, zb, c, x1, y1, z1);
+
 } //end draw_line
