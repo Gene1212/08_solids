@@ -15,18 +15,18 @@ void swap(double *p0, double *p1)
   *p1 = tmp;
 }
 
-void sortByY(double arr[4][3])
+void sortByY(struct matrix *a)
 {
   int i, j;
   for (i = 0; i < 2; i++)
   {
     for (j = 0; j < 2 - i; j++)
     {
-      if (arr[1][j] > arr[1][j + 1])
+      if (a->m[1][j] >= a->m[1][j + 1])
       {
-        swap(&arr[0][j], &arr[0][j + 1]);
-        swap(&arr[1][j], &arr[1][j + 1]);
-        swap(&arr[2][j], &arr[2][j + 1]);
+        swap(&a->m[0][j], &a->m[0][j + 1]);
+        swap(&a->m[1][j], &a->m[1][j + 1]);
+        swap(&a->m[2][j], &a->m[2][j + 1]);
       }
     }
   }
@@ -56,9 +56,6 @@ void scanline_convert(struct matrix *points, int i, screen s, zbuffer zb)
 
   for (point = 0; point < points->lastcol - 2; point += 3)
   {
-    /* double y1 = points->m[1][point];
-    double y2 = points->m[1][point + 1];
-    double y3 = points->m[1][point + 2]; */
     (c.red += ((i % 25) + 2) * 16) % 255;
     (c.green += ((i % 20) + 2) * 16) % 255;
     (c.blue += ((i % 15) + 2) * 16) % 255;
@@ -74,164 +71,6 @@ void scanline_convert(struct matrix *points, int i, screen s, zbuffer zb)
     zm = points->m[2][point + 1];
     zt = points->m[2][point + 2];
 
-    /* if (y3 > y2 && y3 > y1 && y2 > y1)
-    {
-      yb = y1;
-      ym = y2;
-      yt = y3;
-      xb = points->m[0][point];
-      xm = points->m[0][point + 1];
-      xt = points->m[0][point + 2];
-      zbot = points->m[2][point];
-      zm = points->m[2][point + 1];
-      zt = points->m[2][point + 2];
-    }
-
-    else if (y3 > y2 && y3 > y1 && y2 < y1)
-    {
-      yb = y2;
-      ym = y1;
-      yt = y3;
-      xb = points->m[0][point + 1];
-      xm = points->m[0][point];
-      xt = points->m[0][point + 2];
-      zbot = points->m[2][point + 1];
-      zm = points->m[2][point];
-      zt = points->m[2][point + 2];
-    }
-
-    else if (y2 > y1 && y2 > y3 && y1 < y3)
-    {
-      yb = y1;
-      ym = y3;
-      yt = y2;
-      xb = points->m[0][point];
-      xm = points->m[0][point + 2];
-      xt = points->m[0][point + 1];
-      zbot = points->m[2][point];
-      zm = points->m[2][point + 2];
-      zt = points->m[2][point + 1];
-    }
-    else if (y2 > y1 && y2 > y3 && y1 > y3)
-    {
-      yb = y3;
-      ym = y1;
-      yt = y2;
-      xb = points->m[0][point + 2];
-      xm = points->m[0][point];
-      xt = points->m[0][point + 1];
-      zbot = points->m[2][point + 2];
-      zm = points->m[2][point];
-      zt = points->m[2][point + 1];
-    }
-    else if (y1 > y2 && y1 > y3 && y2 > y3)
-    {
-      yb = y3;
-      ym = y2;
-      yt = y1;
-      xb = points->m[0][point + 2];
-      xm = points->m[0][point + 1];
-      xt = points->m[0][point];
-      zbot = points->m[2][point + 2];
-      zm = points->m[2][point + 1];
-      zt = points->m[2][point];
-    }
-    else if (y1 > y2 && y1 > y3 && y2 < y3)
-    {
-      yb = y2;
-      ym = y3;
-      yt = y1;
-      xb = points->m[0][point + 1];
-      xm = points->m[0][point + 2];
-      xt = points->m[0][point];
-      zbot = points->m[2][point + 1];
-      zm = points->m[2][point + 2];
-      zt = points->m[2][point];
-    }
-    //special case
-    else if (y1 == y2)
-    {
-      if (y1 > y3)
-      {
-        yb = y3;
-        ym = y2;
-        yt = y1;
-        xb = points->m[0][point + 2];
-        xm = points->m[0][point + 1];
-        xt = points->m[0][point];
-        zbot = points->m[2][point + 2];
-        zm = points->m[2][point + 1];
-        zt = points->m[2][point];
-      }
-      else
-      {
-        yt = y3;
-        ym = y1;
-        yb = y2;
-        xt = points->m[0][point + 2];
-        xm = points->m[0][point];
-        yb = points->m[0][point + 1];
-        zbot = points->m[2][point + 1];
-        zm = points->m[2][point];
-        zt = points->m[2][point + 2];
-      }
-    }
-
-    else if (y1 == y3)
-    {
-      if (y1 > y2)
-      {
-        yb = y2;
-        yt = y1;
-        ym = y3;
-        xb = points->m[0][point + 1];
-        xt = points->m[0][point];
-        xm = points->m[0][point + 2];
-        zbot = points->m[2][point + 1];
-        zm = points->m[2][point + 2];
-        zt = points->m[2][point];
-      }
-      else
-      {
-        yt = y2;
-        yb = y1;
-        ym = y3;
-        xt = points->m[0][point + 1];
-        xb = points->m[0][point];
-        xm = points->m[0][point + 2];
-        zbot = points->m[2][point];
-        zm = points->m[2][point + 2];
-        zt = points->m[2][point + 1];
-      }
-    }
-    else if (y2 == y3)
-    {
-      if (y2 > y1)
-      {
-        yb = y1;
-        ym = y2;
-        yt = y3;
-        xb = points->m[0][point];
-        xm = points->m[0][point + 1];
-        xt = points->m[0][point + 2];
-        zbot = points->m[2][point];
-        zm = points->m[2][point + 1];
-        zt = points->m[2][point + 2];
-      }
-      else
-      {
-        yt = y1;
-        ym = y2;
-        yb = y3;
-        xt = points->m[0][point];
-        xm = points->m[0][point + 1];
-        xb = points->m[0][point + 2];
-        zbot = points->m[2][point + 2];
-        zm = points->m[2][point + 1];
-        zt = points->m[2][point];
-      }
-    } */
-
     x0 = xb;
     x1 = xb;
     y0 = yb;
@@ -246,6 +85,11 @@ void scanline_convert(struct matrix *points, int i, screen s, zbuffer zb)
     double dz1 = (zm - zbot) / (ym - yb + 1);
     double dz1_1 = (zt - zm) / (yt - ym + 1);
     double zswap = zm;
+
+    if (ym == yb)
+    {
+      draw_line(x0, y0, z0, xm, ym, z1, s, zb, c);
+    }
 
     while (y0 <= yt)
     {

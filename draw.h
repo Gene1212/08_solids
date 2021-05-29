@@ -5,7 +5,7 @@
 #include "ml6.h"
 
 void swap(double *p0, double *p1);
-void sortByY(double arr[4][3]);
+void sortByY(struct matrix *a);
 
 void scanline_convert(struct matrix *points, int i, screen s, zbuffer zb);
 
