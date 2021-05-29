@@ -8,6 +8,30 @@
 #include "math.h"
 #include "gmath.h"
 
+void swap(double *p0, double *p1)
+{
+  double tmp = *p0;
+  *p0 = *p1;
+  *p1 = tmp;
+}
+
+void sortByY(double arr[4][3])
+{
+  int i, j;
+  for (i = 0; i < 2; i++)
+  {
+    for (j = 0; j < 2 - i; j++)
+    {
+      if (arr[1][j] > arr[1][j + 1])
+      {
+        swap(&arr[0][j], &arr[0][j + 1]);
+        swap(&arr[1][j], &arr[1][j + 1]);
+        swap(&arr[2][j], &arr[2][j + 1]);
+      }
+    }
+  }
+}
+
 /*======== void scanline_convert() ==========
   Inputs: struct matrix *points
           int i
@@ -32,14 +56,25 @@ void scanline_convert(struct matrix *points, int i, screen s, zbuffer zb)
 
   for (point = 0; point < points->lastcol - 2; point += 3)
   {
-    double y1 = points->m[1][point];
+    /* double y1 = points->m[1][point];
     double y2 = points->m[1][point + 1];
-    double y3 = points->m[1][point + 2];
+    double y3 = points->m[1][point + 2]; */
     (c.red += ((i % 25) + 2) * 16) % 255;
     (c.green += ((i % 20) + 2) * 16) % 255;
     (c.blue += ((i % 15) + 2) * 16) % 255;
 
-    if (y3 > y2 && y3 > y1 && y2 > y1)
+    sortByY(points);
+    yb = points->m[1][point];
+    ym = points->m[1][point + 1];
+    yt = points->m[1][point + 2];
+    xb = points->m[0][point];
+    xm = points->m[0][point + 1];
+    xt = points->m[0][point + 2];
+    zbot = points->m[2][point];
+    zm = points->m[2][point + 1];
+    zt = points->m[2][point + 2];
+
+    /* if (y3 > y2 && y3 > y1 && y2 > y1)
     {
       yb = y1;
       ym = y2;
@@ -195,7 +230,7 @@ void scanline_convert(struct matrix *points, int i, screen s, zbuffer zb)
         zm = points->m[2][point + 1];
         zt = points->m[2][point];
       }
-    }
+    } */
 
     x0 = xb;
     x1 = xb;
